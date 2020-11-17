@@ -1,5 +1,11 @@
 # AWS + Serverless API for your application
 
+## Project information
+
+It is a skeleton for your AWS + Serverless applications. It uses typescript,
+webpack, dir-config plugin for Serverless function and resources and env
+plugin for encrypted environment variables.
+
 ## NPM commands
 
 - **deploy:dev**: deploy to the AWS dev environment
@@ -16,23 +22,91 @@
 - **sqs:receive-messages**: receive messages from local queue (remove square brackets for FIFO queue)
 - **sqs:delete-queue**: delete local queue (remove square brackets for FIFO queue)
 - **db:up**: start Docker Postgres container for local development
-- **db:down**: stop Docker Postgres container for local development
 - **db:drop**: drop Postgres database
 - **db:create**: create Postgres database
 - **db:migrate**: migrate Postgres database
 - **dynamodb:up**: start Docker DynamoDB container for local development
-- **dynamodb:down**: stop Docker DynamoDB container for local development
 - **sonarqube:up**: start Docker SonarQube container for local static code analysis
-- **sonarqube:down**: stop Docker SonarQube container for local static code analysis
-- **sonarqube-verify**: start static code analysis
+- **sonarqube-verify**: start Static Code Analysis
+- **containers:down**: stop all containers
 
-## Project information
+## Deployment information
 
-It is a skeleton for your AWS + Serverless applications. It uses typescript,
-webpack, dir-config plugin for Serverless function and resources and env
-plugin for encrypted environment variables.
+1. Preparation
+   - Install `nvm`\
+     Linux, OSX: https://github.com/nvm-sh/nvm \
+     Windows: https://github.com/coreybutler/nvm-windows
+   - Install `Node.js` _Recommended For Most Users_ version (12.18.4 for now) using nvm \
+     Linux, OSX: https://github.com/nvm-sh/nvm#usage \
+     Windows: https://github.com/coreybutler/nvm-windows#usage
+     ```
+     nvm install 12.18.4
+     nvm use 12.18.4
+     ```
+   - Install `aws-cli` version 2 \
+     Linux: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html \
+     Windows: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-windows.html \
+     OSX: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-mac.html
+   - Install `Serverless framework` globally via npm \
+     https://serverless.com/framework/docs/getting-started/
+     ```
+     npm install -g serverless
+     ```
+   - Create AWS user with at least programmatic access. It will be better to use a user with the Admin access.
+     Download user's credentials.\
+     Set up `AWS credentials` according to `Serverless framework` documentation. \
+     Name the profile as it named in the `env.yml -> PROFILE` field. \
+     https://serverless.com/framework/docs/providers/aws/cli-reference/config-credentials/
+     ```
+     serverless config credentials --provider aws --key ACCESS_KEY_ID --secret SECRET_ACCESS_KEY --profile PROFILE
+     ```
+   - Install `git` https://git-scm.com/downloads
+   - If the repository is private you should set up SSH key or use HTTPS for cloning it
+   - Clone the repository
+   - Install node_modules running the command in the root of the project
+     ```
+     npm i
+     ```
+2. Set up environment variables
 
-### It contains:
+   - Open env.yml file, you can see stage sections here. For example, `local`, `dev`, and `prod`.
+     If you deploy on production use `prod` section and do not touch other sections.
+   - Input your AWS region, for example, `us-east-1`
+   - Go to AWS Console `Key Management Service` and create Symmetric key in your region
+   - In the root folder of the project create kms_key.yml file and copy your key (Key ID) here like
+     ```
+     key: your_key_here
+     ```
+   - You can add any environment variables. If you need to secure them, encrypt them.
+   - Copy the value of variable and run the command in the root of the project
+     ```
+     sls env --attribute VARIABLE_NAME --value variable_value --stage your_stage --encrypt
+     ```
+   - If you use some common variables, like
+
+     ```yaml
+     common: &common
+       REGION: us-east-1
+       PROFILE: default
+       CLIENT: FLO
+
+     local:
+       <<: *common
+     ```
+
+     The plugin will add this variables to all stages, but we don't want it.
+     So after encrypting, copy encrypted value of the new variable,
+     revert changes and paste it to the right place.
+
+   - You are ready for deploying
+
+3. Deploy
+   - Run the command in the root of the project
+     ```
+     npm run deploy:your_stage
+     ```
+
+### The project contains:
 
 - The Media Info feature that uses mediainfo binary file and returns media info by url
 - Examples of offline plugins and docker-compose file for working

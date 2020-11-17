@@ -25,14 +25,24 @@ export interface Track {
  * This services works with some third party library, API, etc.
  */
 export class MediaInfoCurlService {
-  private readonly mediaInfoCurl = './mediainfo-curl';
+  private readonly mediaInfoCurl = 'mediainfo-curl';
 
   async getMediaInfo(url: string): Promise<Track | undefined> {
     /**
      * Get Media Info from mediainfo-curl
      */
     const execPromise = promisify(execFile);
-    const mediaInfoXML = await execPromise(this.mediaInfoCurl, ['--Output=XML', '-f', url], {});
+    const mediaInfoXML = await execPromise(
+      this.mediaInfoCurl,
+      [
+        '--Output=XML',
+        '-f',
+        // https://github.com/MediaArea/MediaInfoLib/issues/221#issuecomment-615178083
+        '--urlencode',
+        url,
+      ],
+      {}
+    );
 
     /**
      * Parse XML to JS
